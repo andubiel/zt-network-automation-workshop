@@ -124,8 +124,16 @@ PIP_PID=$!
 # ---------------------------------------------------------------------------
 REPO_URL="https://github.com/rhpds/zt-network-automation-workshop.git"
 REPO_DIR="/tmp/zt-network-automation-workshop"
-echo "Cloning workshop repo for exercise files..." >> /tmp/progress.log
-git clone "${REPO_URL}" "${REPO_DIR}" >> /tmp/progress.log 2>&1 || true
+if [[ -d "${REPO_DIR}/.git" ]]; then
+  echo "Workshop repo already present at ${REPO_DIR}" >> /tmp/progress.log
+elif command -v git &>/dev/null; then
+  rm -rf "${REPO_DIR}"
+  if ! git clone "${REPO_URL}" "${REPO_DIR}" >> /tmp/progress.log 2>&1; then
+    echo "ERROR: git clone failed" >> /tmp/progress.log
+  fi
+else
+  echo "ERROR: git not installed; cannot clone workshop repo (check RHSM/dnf earlier in the log)" >> /tmp/progress.log
+fi
 
 if [[ -d "${REPO_DIR}/rpms" ]]; then
   echo "Installing any bundled RPMs..." >> /tmp/progress.log
